@@ -6,25 +6,29 @@ import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import { getAgent } from '@/lib/agents';
 import { useSpeechOutput } from '@/hooks/useSpeechOutput';
+import { Bookmark as BookmarkIcon } from 'lucide-react';
 import type { Subject, Message } from '@/types';
 
 interface Props {
   message: Message;
   subject: Subject;
+  onBookmark?: (m: Message) => void;
+  isBookmarked?: boolean;
+  lowData?: boolean;
 }
 
-export default function MessageBubble({ message, subject }: Props) {
+export default function MessageBubble({ message, subject, onBookmark, isBookmarked, lowData }: Props) {
   const agent = getAgent(subject.id);
   const { speak, stop, isSpeaking, supported } = useSpeechOutput();
   const isUser = message.role === 'user';
-  const time = message.timestamp.toLocaleTimeString('en-PK', {
+  const time = message.timestamp ? message.timestamp.toLocaleTimeString('en-PK', {
     hour: '2-digit',
     minute: '2-digit',
-  });
+  }) : '';
 
   return (
     <div
-      className={`flex w-full animate-msg-slide ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex w-full ${!lowData ? 'animate-msg-slide' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`flex max-w-[85%] items-end gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         <div
@@ -84,6 +88,20 @@ export default function MessageBubble({ message, subject }: Props) {
                 title={isSpeaking ? "Stop" : "Listen"}
               >
                 {isSpeaking ? '⏹️' : '🔊'}
+              </button>
+            )}
+
+            {!isUser && onBookmark && (
+              <button
+                onClick={() => onBookmark(message)}
+                className={`flex h-5 w-5 items-center justify-center rounded-full transition ${
+                  isBookmarked
+                    ? 'text-brand-primary'
+                    : 'text-brand-muted hover:bg-white/5 hover:text-brand-primary'
+                }`}
+                title={isBookmarked ? "Remove from Notes" : "Save to Notes"}
+              >
+                <BookmarkIcon size={12} fill={isBookmarked ? "currentColor" : "none"} />
               </button>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 import { getAgent } from '@/lib/agents';
+import { UserEducation } from '@/lib/boards';
 import type { QuizQuestion } from '@/types';
 
 export const runtime = 'nodejs';
@@ -9,9 +10,10 @@ interface QuizRequestBody {
   subject: string;
   topic?: string;
   streak?: number;
+  education?: UserEducation;
 }
 
-function buildQuizPrompt(subject: string, topic?: string, streak: number = 0): string {
+function buildQuizPrompt(subject: string, topic?: string, streak: number = 0, education?: UserEducation): string {
   const agent = getAgent(subject);
   const context = topic 
     ? `Topic focus: ${topic}. Is topic par specific sawal poochiye.` 
@@ -25,10 +27,19 @@ function buildQuizPrompt(subject: string, topic?: string, streak: number = 0): s
     difficultyInstruction = `\nCRITICAL: The student has a streak of ${Math.abs(streak)} WRONG answers. Make this question EASIER and fundamental.`;
   }
 
+  // Education Context logic
+  let eduContext = education 
+    ? `\nSTRICT SYLLABUS SCOPE: Student is in ${education.grade} grade, ${education.board} Board. Only ask what is relevant to this curriculum.` 
+    : '';
+
+  if (education?.lowData) {
+    eduContext += `\nLOW-DATA MODE: Keep question and explanations very short.`;
+  }
+
   return `Tum "${agent.name}" ho — Pakistani AI tutor.
 
 Subject: ${subject}
-${context}${difficultyInstruction}
+${context}${difficultyInstruction}${eduContext}
 
 Ek MCQ (multiple choice question) banao Pakistani school/college student ke liye (age 12-22).
 Mix Roman Urdu + English use karo question aur explanations mein.
@@ -85,7 +96,7 @@ export async function POST(request: Request) {
   try {
     const { text } = await generateText({
       model: 'google/gemini-2.0-flash',
-      prompt: buildQuizPrompt(body.subject, body.topic, body.streak),
+      prompt: buildQuizPrompt(body.subject, body.topic, body.streak, body.education),
       temperature: 0.9,
     });
 

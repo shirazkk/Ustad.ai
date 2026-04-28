@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getAgent } from '@/lib/agents';
+import { UserEducation } from '@/lib/boards';
 import type { QuizQuestion, Subject } from '@/types';
 
 interface Props {
   open: boolean;
   subject: Subject;
+  education: UserEducation;
   onClose: () => void;
   onCorrect: () => void;
 }
@@ -16,7 +18,7 @@ type Status = 'loading' | 'ready' | 'answered' | 'error';
 
 const TOTAL_QUESTIONS = 10;
 
-export default function QuizModal({ open, subject, onClose, onCorrect }: Props) {
+export default function QuizModal({ open, subject, education, onClose, onCorrect }: Props) {
   const [mode, setMode] = useState<Mode>('setup');
   const [status, setStatus] = useState<Status>('loading');
   const [topic, setTopic] = useState('');
@@ -56,7 +58,8 @@ export default function QuizModal({ open, subject, onClose, onCorrect }: Props) 
         body: JSON.stringify({ 
           subject: subject.id,
           topic: currentTopic || undefined,
-          streak: streak // Pass current streak to adjust difficulty
+          streak: streak,
+          education,
         }),
       });
       const data = (await res.json()) as { quiz: QuizQuestion | null };

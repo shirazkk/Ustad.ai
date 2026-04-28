@@ -1,16 +1,18 @@
 'use client';
 
 import { getAgent } from '@/lib/agents';
+import { Bookmark as BookmarkIcon } from 'lucide-react';
 import type { Subject } from '@/types';
 
 interface Props {
   subject: Subject;
   onOpenQuiz: () => void;
   onOpenSidebar: () => void;
+  onOpenBookmarks: () => void;
   onClearChat: () => void;
 }
 
-export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onClearChat }: Props) {
+export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onOpenBookmarks, onClearChat }: Props) {
   const agent = getAgent(subject.id);
 
   return (
@@ -33,6 +35,13 @@ export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onClear
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          onClick={onOpenBookmarks}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-brand-muted hover:bg-white/5 hover:text-brand-primary transition"
+          title="Saved Notes"
+        >
+          <BookmarkIcon size={18} />
+        </button>
         <button
           onClick={onClearChat}
           className="flex h-9 w-9 items-center justify-center rounded-full text-brand-muted hover:bg-brand-secondary/10 hover:text-brand-secondary transition"

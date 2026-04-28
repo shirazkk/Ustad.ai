@@ -6,10 +6,14 @@ import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import InputArea from './InputArea';
 import QuizModal from './QuizModal';
+import BookmarksModal from './BookmarksModal';
 import { SUBJECTS } from '@/lib/subjects';
 import { getAgent } from '@/lib/agents';
 import { saveMessages, loadMessages, clearMessages } from '@/lib/storage';
 import { recordActivity, getStreak } from '@/lib/streak';
+import { toggleBookmark, getBookmarks, isBookmarked } from '@/lib/bookmarks';
+import { UserEducation, getEducation } from '@/lib/boards';
+import SettingsModal from './SettingsModal';
 import type { GeminiMessage, Message, Subject } from '@/types';
 
 function syncGeminiHistory(messages: Message[]): GeminiMessage[] {
@@ -51,10 +55,14 @@ export default function ChatApp() {
     return Number.isNaN(n) ? 0 : n;
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [education, setEducation] = useState<UserEducation>({ board: 'Federal', grade: '10th', lowData: false });
+  const [showSettings, setShowSettings] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
+  const [showBookmarks, setShowBookmarks] = useState(false);
 
   // Initial load on mount
   useEffect(() => {
-    // Initial Load
+    // Initial Load messages
     const history = loadMessages(currentSubject.id);
     if (history.length > 0) {
       setMessages(history);
@@ -70,7 +78,27 @@ export default function ChatApp() {
         },
       ]);
     }
+    
+    // Initial Load bookmarks
+    const saved = getBookmarks();
+    setBookmarkedIds(new Set(saved.map(b => b.id)));
+    
+    // Initial Load streak
+    setStreak(getStreak());
+
+    // Initial Load education
+    setEducation(getEducation());
   }, []);
+
+  const handleBookmark = (message: Message) => {
+    toggleBookmark(message, currentSubject.id, currentSubject.label);
+    setBookmarkedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(message.id)) next.delete(message.id);
+      else next.add(message.id);
+      return next;
+    });
+  };
 
   // Auto-save messages
   useEffect(() => {
@@ -189,6 +217,7 @@ export default function ChatApp() {
             message: trimmed,
             imageBase64: imageForTurn ?? undefined,
             subject: currentSubject.id,
+            education,
           }),
         });
 
@@ -252,6 +281,7 @@ export default function ChatApp() {
         currentSubject={currentSubject}
         streak={streak}
         onSubjectChange={handleSubjectChange}
+        onOpenSettings={() => setShowSettings(true)}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -261,6 +291,7 @@ export default function ChatApp() {
           subject={currentSubject}
           onOpenQuiz={() => setShowQuiz(true)}
           onOpenSidebar={() => setSidebarOpen(true)}
+          onOpenBookmarks={() => setShowBookmarks(true)}
           onClearChat={handleClearChat}
         />
         <MessageList
@@ -268,6 +299,9 @@ export default function ChatApp() {
           isLoading={isLoading}
           subject={currentSubject}
           onQuickSend={sendMessage}
+          onBookmark={handleBookmark}
+          bookmarkedIds={bookmarkedIds}
+          lowData={education.lowData}
         />
         <InputArea
           onSend={sendMessage}
@@ -281,8 +315,20 @@ export default function ChatApp() {
       <QuizModal
         open={showQuiz}
         subject={currentSubject}
+        education={education}
         onClose={() => setShowQuiz(false)}
         onCorrect={() => persistStreak(streak + 1)}
+      />
+      <BookmarksModal
+        open={showBookmarks}
+        bookmarks={getBookmarks()}
+        onClose={() => setShowBookmarks(false)}
+        onRemove={handleBookmark}
+      />
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSave={setEducation}
       />
     </div>
   );

@@ -3,17 +3,19 @@
 import { SUBJECTS } from '@/lib/subjects';
 import { getAgent } from '@/lib/agents';
 import StreakHeatmap from './StreakHeatmap';
+import { Settings } from 'lucide-react';
 import type { Subject } from '@/types';
 
 interface Props {
   currentSubject: Subject;
   streak: number;
   onSubjectChange: (s: Subject) => void;
+  onOpenSettings: () => void;
   open: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ currentSubject, streak, onSubjectChange, open, onClose }: Props) {
+export default function Sidebar({ currentSubject, streak, onSubjectChange, onOpenSettings, open, onClose }: Props) {
   const agent = getAgent(currentSubject.id);
 
   return (
@@ -101,6 +103,17 @@ export default function Sidebar({ currentSubject, streak, onSubjectChange, open,
         {/* Heatmap & Streak */}
         <div className="border-t border-white/5 px-4 py-4">
           <StreakHeatmap />
+        </div>
+
+        {/* Settings Footer */}
+        <div className="mt-auto border-t border-white/5 p-4">
+          <button
+            onClick={onOpenSettings}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-brand-muted transition hover:bg-white/5 hover:text-brand-text"
+          >
+            <Settings size={18} />
+            <span className="font-medium">Syllabus Settings</span>
+          </button>
         </div>
       </aside>
     </>

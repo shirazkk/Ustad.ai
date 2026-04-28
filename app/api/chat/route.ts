@@ -1,5 +1,6 @@
 import { streamText, type ModelMessage } from 'ai';
 import { getAgent } from '@/lib/agents';
+import { UserEducation } from '@/lib/boards';
 import type { GeminiMessage } from '@/types';
 
 export const runtime = 'nodejs';
@@ -10,6 +11,7 @@ interface ChatRequestBody {
   message: string;
   imageBase64?: string;
   subject: string;
+  education?: UserEducation;
 }
 
 function geminiHistoryToModelMessages(history: GeminiMessage[]): ModelMessage[] {
@@ -30,9 +32,20 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { history, message, imageBase64, subject } = body;
+  const { history, message, imageBase64, subject, education } = body;
 
   const messages: ModelMessage[] = geminiHistoryToModelMessages(history ?? []);
+
+  const agent = getAgent(subject);
+
+  // Education Context Injection
+  let eduContext = education 
+    ? `\n\nSTRICT SYLLABUS SCOPE: The student is in ${education.grade} grade, following the ${education.board} Board curriculum. Tailor your explanations, terminology, and complexity to match this specific syllabus.`
+    : '';
+
+  if (education?.lowData) {
+    eduContext += `\n\nLOW-DATA MODE ENABLED: Keep your response extremely brief and concise (under 80 words). Avoid long explanations and heavy formatting.`;
+  }
 
   if (imageBase64) {
     const dataUrl = imageBase64.startsWith('data:')
@@ -49,12 +62,10 @@ export async function POST(request: Request) {
     messages.push({ role: 'user', content: message });
   }
 
-  const agent = getAgent(subject);
-
   try {
     const result = streamText({
       model: 'google/gemini-2.0-flash',
-      system: agent.systemPrompt,
+      system: agent.systemPrompt + eduContext,
       messages,
       temperature: agent.temperature,
       onError: ({ error }) => {

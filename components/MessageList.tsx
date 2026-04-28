@@ -11,9 +11,20 @@ interface Props {
   isLoading: boolean;
   subject: Subject;
   onQuickSend: (text: string) => void;
+  onBookmark: (m: Message) => void;
+  bookmarkedIds: Set<string>;
+  lowData?: boolean;
 }
 
-export default function MessageList({ messages, isLoading, subject, onQuickSend }: Props) {
+export default function MessageList({ 
+  messages, 
+  isLoading, 
+  subject, 
+  onQuickSend,
+  onBookmark,
+  bookmarkedIds,
+  lowData 
+}: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   const agent = getAgent(subject.id);
 
@@ -59,7 +70,14 @@ export default function MessageList({ messages, isLoading, subject, onQuickSend 
     <div className="chat-scroll flex-1 overflow-y-auto px-4 py-6 sm:px-6">
       <div className="mx-auto flex max-w-3xl flex-col gap-5">
         {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} subject={subject} />
+          <MessageBubble 
+            key={m.id} 
+            message={m} 
+            subject={subject} 
+            onBookmark={onBookmark}
+            isBookmarked={bookmarkedIds.has(m.id)}
+            lowData={lowData}
+          />
         ))}
         {isLoading && <TypingIndicator subject={subject} />}
         <div ref={endRef} />
