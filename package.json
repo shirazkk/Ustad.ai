@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/react": "^3.0.170",
     "ai": "^6.0.168",
+    "browser-image-compression": "^2.0.2",
     "framer-motion": "^12.38.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.45",

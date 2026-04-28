@@ -8,16 +8,12 @@ import type { Subject } from '@/types';
 
 interface Props {
   currentSubject: Subject;
-  streak: number;
   onSubjectChange: (s: Subject) => void;
-  onOpenSettings: () => void;
   open: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ currentSubject, streak, onSubjectChange, onOpenSettings, open, onClose }: Props) {
-  const agent = getAgent(currentSubject.id);
-
+export default function Sidebar({ currentSubject, onSubjectChange, open, onClose }: Props) {
   return (
     <>
       {/* Mobile backdrop */}
@@ -29,91 +25,79 @@ export default function Sidebar({ currentSubject, streak, onSubjectChange, onOpe
       />
 
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-full w-72 flex-col border-r border-white/5 bg-brand-surface/95 backdrop-blur-xl transition-transform md:static md:translate-x-0 ${
+        className={`fixed left-0 top-0 z-40 flex h-full w-72 flex-col border-r border-white/5 bg-brand-surface transition-transform duration-300 md:static md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand */}
-        <div className="flex items-center justify-between border-b border-white/5 px-5 py-5">
-          <h1 className="font-syne text-2xl font-bold gradient-text">Ustaad.ai</h1>
+        <div className="flex items-center justify-between px-6 py-8">
+          <h1 className="font-syne text-2xl font-extrabold tracking-tight text-brand-text">
+            Ustaad<span className="text-brand-primary">.ai</span>
+          </h1>
           <button
             onClick={onClose}
-            className="text-brand-muted hover:text-brand-text md:hidden"
-            aria-label="Close sidebar"
+            className="rounded-full p-2 text-brand-muted hover:bg-white/5 hover:text-brand-text md:hidden"
           >
             ✕
           </button>
         </div>
 
-        {/* Tutor card */}
-        <div className="px-5 py-4">
-          <div className="flex items-center gap-3 rounded-xl border border-white/5 bg-brand-card p-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary text-2xl animate-avatar-pulse">
-              {agent.avatar}
-            </div>
-            <div className="flex-1">
-              <div className="font-syne font-semibold text-brand-text">{agent.name}</div>
-              <div className="flex items-center gap-1.5 text-xs text-brand-muted">
-                <span className="h-2 w-2 rounded-full bg-brand-accent" />
-                Online · Ready to teach
-              </div>
-            </div>
+        {/* Subjects List */}
+        <div className="flex-1 overflow-y-auto px-4 chat-scroll">
+          <div className="mb-4 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-muted opacity-50">
+            Current Library
           </div>
-        </div>
-
-        {/* Subjects */}
-        <div className="flex-1 overflow-y-auto px-3 chat-scroll">
-          <div className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted">
-            Subjects
-          </div>
-          <nav className="flex flex-col gap-1">
+          
+          <nav className="space-y-1">
             {SUBJECTS.map((s) => {
               const active = s.id === currentSubject.id;
+              const agent = getAgent(s.id);
+              
               return (
                 <button
                   key={s.id}
                   onClick={() => onSubjectChange(s)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                  className={`group relative flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-all duration-200 ${
                     active
-                      ? 'bg-brand-primary/15 text-brand-text ring-1 ring-brand-primary/40'
+                      ? 'bg-brand-primary/10 text-brand-text'
                       : 'text-brand-muted hover:bg-white/5 hover:text-brand-text'
                   }`}
                 >
-                  {(() => {
-                    const a = getAgent(s.id);
-                    return (
-                      <>
-                        <span className="text-lg">{a.avatar}</span>
-                        <div className="flex flex-col overflow-hidden">
-                          <span className="font-medium">{s.label}</span>
-                          <span className="truncate text-[10px] text-brand-muted">
-                            {a.name} · {a.tagline}
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                  {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-primary" />}
+                  {/* Subject Icon Container */}
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl transition-all duration-300 ${
+                    active 
+                      ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20 scale-105' 
+                      : 'bg-white/5 group-hover:bg-white/10'
+                  }`}>
+                    {agent.avatar}
+                  </div>
+
+                  <div className="flex flex-col overflow-hidden">
+                    <span className={`font-syne font-bold leading-tight transition-colors ${
+                      active ? 'text-brand-text' : 'text-brand-muted'
+                    }`}>
+                      {s.label}
+                    </span>
+                    <span className="truncate text-[11px] font-medium text-brand-muted opacity-60">
+                      With {agent.name}
+                    </span>
+                  </div>
+
+                  {active && (
+                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-primary shadow-[0_0_8px_rgba(124,58,237,0.8)]" />
+                  )}
                 </button>
               );
             })}
           </nav>
         </div>
 
-        {/* Heatmap & Streak */}
-        <div className="border-t border-white/5 px-4 py-4">
-          <StreakHeatmap />
-        </div>
-
-        {/* Settings Footer */}
-        <div className="mt-auto border-t border-white/5 p-4">
-          <button
-            onClick={onOpenSettings}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-brand-muted transition hover:bg-white/5 hover:text-brand-text"
-          >
-            <Settings size={18} />
-            <span className="font-medium">Syllabus Settings</span>
-          </button>
+        {/* Help/Support placeholder or empty space for clean look */}
+        <div className="mt-auto p-6">
+          <div className="rounded-2xl bg-gradient-to-br from-brand-primary/5 to-transparent p-4 border border-white/5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-brand-muted opacity-40">Version 1.0</p>
+            <p className="text-[11px] text-brand-muted mt-1 leading-relaxed">Har roz kuch naya seekho. 🚀</p>
+          </div>
         </div>
       </aside>
     </>

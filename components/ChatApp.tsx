@@ -12,7 +12,8 @@ import { getAgent } from '@/lib/agents';
 import { saveMessages, loadMessages, clearMessages } from '@/lib/storage';
 import { recordActivity, getStreak } from '@/lib/streak';
 import { toggleBookmark, getBookmarks, isBookmarked } from '@/lib/bookmarks';
-import { UserEducation, getEducation } from '@/lib/boards';
+import { UserEducation, getEducation, saveEducation } from '@/lib/boards';
+import LearningHub from './LearningHub';
 import SettingsModal from './SettingsModal';
 import type { GeminiMessage, Message, Subject } from '@/types';
 
@@ -57,6 +58,7 @@ export default function ChatApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [education, setEducation] = useState<UserEducation>({ board: 'Federal', grade: '10th', lowData: false });
   const [showSettings, setShowSettings] = useState(false);
+  const [showHub, setShowHub] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [showBookmarks, setShowBookmarks] = useState(false);
 
@@ -279,9 +281,7 @@ export default function ChatApp() {
     <div className="flex h-dvh w-full overflow-hidden">
       <Sidebar
         currentSubject={currentSubject}
-        streak={streak}
         onSubjectChange={handleSubjectChange}
-        onOpenSettings={() => setShowSettings(true)}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -291,7 +291,7 @@ export default function ChatApp() {
           subject={currentSubject}
           onOpenQuiz={() => setShowQuiz(true)}
           onOpenSidebar={() => setSidebarOpen(true)}
-          onOpenBookmarks={() => setShowBookmarks(true)}
+          onOpenHub={() => setShowHub(true)}
           onClearChat={handleClearChat}
         />
         <MessageList
@@ -319,6 +319,19 @@ export default function ChatApp() {
         onClose={() => setShowQuiz(false)}
         onCorrect={() => persistStreak(streak + 1)}
       />
+      
+      <LearningHub
+        open={showHub}
+        onClose={() => setShowHub(false)}
+        streak={streak}
+        education={education}
+        onSaveEducation={(edu) => {
+          setEducation(edu);
+          saveEducation(edu);
+        }}
+      />
+
+      {/* Kept for legacy/direct access if needed, but primary access is via Hub */}
       <BookmarksModal
         open={showBookmarks}
         bookmarks={getBookmarks()}

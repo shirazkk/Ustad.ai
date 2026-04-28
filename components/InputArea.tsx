@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
 import { getAgent } from '@/lib/agents';
 import { useSpeechInput } from '@/hooks/useSpeechInput';
+import imageCompression from 'browser-image-compression';
 import type { Subject } from '@/types';
 
 interface Props {
@@ -55,17 +56,40 @@ export default function InputArea({ onSend, onImageUpload, uploadedImage, disabl
     }
   };
 
-  const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === 'string') {
-        onImageUpload(result);
-      }
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const options = {
+        maxSizeMB: 0.5, // 500KB
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          onImageUpload(result);
+        }
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error('Image compression error:', error);
+      // Fallback to original file if compression fails
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          onImageUpload(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    
     e.target.value = '';
   };
 
