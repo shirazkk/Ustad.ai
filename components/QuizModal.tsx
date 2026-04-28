@@ -29,6 +29,8 @@ export default function QuizModal({ open, subject, onClose, onCorrect }: Props) 
   const inputRef = useRef<HTMLInputElement>(null);
   const agent = getAgent(subject.id);
 
+  const [streak, setStreak] = useState(0); // Tracking consecutive correct/incorrect answers
+
   // Reset states when modal opens
   useEffect(() => {
     if (open) {
@@ -39,6 +41,7 @@ export default function QuizModal({ open, subject, onClose, onCorrect }: Props) 
       setSelected(null);
       setCurrentIdx(0);
       setScore(0);
+      setStreak(0);
       setSessionHistory([]);
     }
   }, [open]);
@@ -52,7 +55,8 @@ export default function QuizModal({ open, subject, onClose, onCorrect }: Props) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           subject: subject.id,
-          topic: currentTopic || undefined
+          topic: currentTopic || undefined,
+          streak: streak // Pass current streak to adjust difficulty
         }),
       });
       const data = (await res.json()) as { quiz: QuizQuestion | null };
@@ -81,7 +85,10 @@ export default function QuizModal({ open, subject, onClose, onCorrect }: Props) 
     const correct = idx === quiz.correct;
     if (correct) {
       setScore(s => s + 1);
+      setStreak(s => Math.max(0, s) + 1);
       onCorrect();
+    } else {
+      setStreak(s => Math.min(0, s) - 1);
     }
     setSessionHistory(prev => [...prev, correct]);
   };

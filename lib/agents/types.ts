@@ -8,4 +8,5 @@ export interface Agent {
   quickPills: string[];
   temperature: number;
   quizStyle: string;
+  gender: 'male' | 'female';
 }

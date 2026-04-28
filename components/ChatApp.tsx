@@ -9,6 +9,7 @@ import QuizModal from './QuizModal';
 import { SUBJECTS } from '@/lib/subjects';
 import { getAgent } from '@/lib/agents';
 import { saveMessages, loadMessages, clearMessages } from '@/lib/storage';
+import { recordActivity, getStreak } from '@/lib/streak';
 import type { GeminiMessage, Message, Subject } from '@/types';
 
 function syncGeminiHistory(messages: Message[]): GeminiMessage[] {
@@ -53,6 +54,7 @@ export default function ChatApp() {
 
   // Initial load on mount
   useEffect(() => {
+    // Initial Load
     const history = loadMessages(currentSubject.id);
     if (history.length > 0) {
       setMessages(history);
@@ -169,6 +171,10 @@ export default function ChatApp() {
       setMessages((m) => [...m, userMessage]);
       setUploadedImage(null);
       setIsLoading(true);
+
+      // Phase 5.2: Record activity and update streak
+      recordActivity();
+      setStreak(getStreak());
 
       const historyForApi: GeminiMessage[] = geminiHistory;
 

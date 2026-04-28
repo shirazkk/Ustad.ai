@@ -5,6 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import { getAgent } from '@/lib/agents';
+import { useSpeechOutput } from '@/hooks/useSpeechOutput';
 import type { Subject, Message } from '@/types';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 
 export default function MessageBubble({ message, subject }: Props) {
   const agent = getAgent(subject.id);
+  const { speak, stop, isSpeaking, supported } = useSpeechOutput();
   const isUser = message.role === 'user';
   const time = message.timestamp.toLocaleTimeString('en-PK', {
     hour: '2-digit',
@@ -69,7 +71,22 @@ export default function MessageBubble({ message, subject }: Props) {
               </div>
             )}
           </div>
-          <span className="text-xs text-brand-muted">{time}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-brand-muted">{time}</span>
+            {!isUser && supported && (
+              <button
+                onClick={() => (isSpeaking ? stop() : speak(message.text, agent.gender))}
+                className={`flex h-5 w-5 items-center justify-center rounded-full transition ${
+                  isSpeaking
+                    ? 'bg-brand-accent/20 text-brand-accent animate-pulse'
+                    : 'text-brand-muted hover:bg-white/5 hover:text-brand-primary'
+                }`}
+                title={isSpeaking ? "Stop" : "Listen"}
+              >
+                {isSpeaking ? '⏹️' : '🔊'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { SUBJECTS } from '@/lib/subjects';
 import { getAgent } from '@/lib/agents';
+import StreakHeatmap from './StreakHeatmap';
 import type { Subject } from '@/types';
 
 interface Props {
@@ -97,15 +98,9 @@ export default function Sidebar({ currentSubject, streak, onSubjectChange, open,
           </nav>
         </div>
 
-        {/* Streak */}
-        <div className="border-t border-white/5 px-5 py-4">
-          <div className="flex items-center gap-3 rounded-xl border border-brand-gold/20 bg-brand-gold/5 p-3">
-            <div className="text-2xl">🔥</div>
-            <div className="flex-1">
-              <div className="font-syne text-lg font-bold text-brand-gold">{streak} din</div>
-              <div className="text-xs text-brand-muted">ka streak chal raha hai!</div>
-            </div>
-          </div>
+        {/* Heatmap & Streak */}
+        <div className="border-t border-white/5 px-4 py-4">
+          <StreakHeatmap />
         </div>
       </aside>
     </>
