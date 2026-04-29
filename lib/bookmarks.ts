@@ -11,6 +11,15 @@ export interface Bookmark extends Message {
   subjectId: string;
   subjectLabel: string;
   savedAt: string;
+  category: 'Formula' | 'Definition' | 'Concept' | 'General';
+}
+
+function detectCategory(text: string): Bookmark['category'] {
+  const lower = text.toLowerCase();
+  if (/[+\-*/=^√Σπθ]/.test(text) || /\d+/.test(text) && lower.includes('=')) return 'Formula';
+  if (lower.includes(' is ') || lower.includes(' means ') || lower.includes(' refers to ') || lower.includes(' kehte hain ')) return 'Definition';
+  if (lower.includes('important') || lower.includes('concept') || lower.includes('note') || lower.includes('khayal rahe')) return 'Concept';
+  return 'General';
 }
 
 /**
@@ -33,7 +42,8 @@ export function toggleBookmark(message: Message, subjectId: string, subjectLabel
       ...message,
       subjectId,
       subjectLabel,
-      savedAt: new Date().toISOString()
+      savedAt: new Date().toISOString(),
+      category: detectCategory(message.text)
     };
     bookmarks.unshift(newBookmark);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));

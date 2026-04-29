@@ -1,5 +1,7 @@
 'use client';
 
+import { Menu, LayoutDashboard, Sparkles, Flame } from 'lucide-react';
+
 import { useCallback, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import ChatHeader from './ChatHeader';
@@ -11,7 +13,7 @@ import { SUBJECTS } from '@/lib/subjects';
 import { getAgent } from '@/lib/agents';
 import { saveMessages, loadMessages, clearMessages } from '@/lib/storage';
 import { recordActivity, getStreak } from '@/lib/streak';
-import { toggleBookmark, getBookmarks, isBookmarked } from '@/lib/bookmarks';
+import { toggleBookmark, getBookmarks } from '@/lib/bookmarks';
 import { UserEducation, getEducation, saveEducation } from '@/lib/boards';
 import LearningHub from './LearningHub';
 import SettingsModal from './SettingsModal';
@@ -43,54 +45,76 @@ function makeId() {
 
 export default function ChatApp() {
   const [currentSubject, setCurrentSubject] = useState<Subject>(SUBJECTS[0]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [geminiHistory, setGeminiHistory] = useState<GeminiMessage[]>([]);
+  
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const history = loadMessages(SUBJECTS[0].id);
+    if (history.length > 0) return history;
+    const agent = getAgent(SUBJECTS[0].id);
+    return [
+      {
+        id: makeId(),
+        role: 'ai',
+        text: `${agent.name} ne join kiya 👋`,
+        timestamp: new Date(),
+      },
+    ];
+  });
+
+  const [geminiHistory, setGeminiHistory] = useState<GeminiMessage[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const history = loadMessages(SUBJECTS[0].id);
+    return syncGeminiHistory(history);
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
+  
   const [streak, setStreak] = useState<number>(() => {
     if (typeof window === 'undefined') return 0;
-    const raw = window.localStorage.getItem(STREAK_KEY);
-    if (!raw) return 0;
-    const n = parseInt(raw, 10);
-    return Number.isNaN(n) ? 0 : n;
+    return getStreak();
   });
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [education, setEducation] = useState<UserEducation>({ board: 'Federal', grade: '10th', lowData: false });
+  
+  const [education, setEducation] = useState<UserEducation>(() => {
+    if (typeof window === 'undefined') return { board: 'Federal', grade: '10th', lowData: false };
+    return getEducation();
+  });
+
   const [showSettings, setShowSettings] = useState(false);
   const [showHub, setShowHub] = useState(false);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
+  
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    const saved = getBookmarks();
+    return new Set(saved.map(b => b.id));
+  });
+
   const [showBookmarks, setShowBookmarks] = useState(false);
 
-  // Initial load on mount
+  // Sync state when subject changes
   useEffect(() => {
-    // Initial Load messages
-    const history = loadMessages(currentSubject.id);
-    if (history.length > 0) {
-      setMessages(history);
-      setGeminiHistory(syncGeminiHistory(history));
-    } else {
-      const agent = getAgent(currentSubject.id);
-      setMessages([
-        {
-          id: makeId(),
-          role: 'ai',
-          text: `${agent.name} ne join kiya 👋`,
-          timestamp: new Date(),
-        },
-      ]);
-    }
-    
-    // Initial Load bookmarks
-    const saved = getBookmarks();
-    setBookmarkedIds(new Set(saved.map(b => b.id)));
-    
-    // Initial Load streak
-    setStreak(getStreak());
-
-    // Initial Load education
-    setEducation(getEducation());
-  }, []);
+    requestAnimationFrame(() => {
+      const history = loadMessages(currentSubject.id);
+      if (history.length > 0) {
+        setMessages(history);
+        setGeminiHistory(syncGeminiHistory(history));
+      } else {
+        const agent = getAgent(currentSubject.id);
+        setMessages([
+          {
+            id: makeId(),
+            role: 'ai',
+            text: `${agent.name} ne join kiya 👋`,
+            timestamp: new Date(),
+          },
+        ]);
+        setGeminiHistory([]);
+      }
+    });
+  }, [currentSubject.id]);
 
   const handleBookmark = (message: Message) => {
     toggleBookmark(message, currentSubject.id, currentSubject.label);
@@ -257,31 +281,42 @@ export default function ChatApp() {
         setIsLoading(false);
       }
 
-      if (!succeeded) {
-        const fallback = 'Yaar internet ka masla lag raha hai! 😅 Dobara try karo.';
-        setMessages((m) => {
-          const exists = m.some((msg) => msg.id === aiMsgId);
-          if (exists) {
-            return m.map((msg) =>
-              msg.id === aiMsgId ? { ...msg, text: fallback } : msg,
-            );
-          }
-          return [...m, { id: aiMsgId, role: 'ai', text: fallback, timestamp: new Date() }];
-        });
-        return;
-      }
-
-      const aiGemini: GeminiMessage = { role: 'model', parts: [{ text: aiText }] };
-      setGeminiHistory((h) => [...h, userGemini, aiGemini]);
-    },
-    [currentSubject.id, geminiHistory, isLoading, uploadedImage],
-  );
+        if (!succeeded) {
+          const fallback = 'Yaar internet ka masla lag raha hai! 😅 Dobara try karo.';
+          setMessages((m) => {
+            const exists = m.some((msg) => msg.id === aiMsgId);
+            if (exists) {
+              return m.map((msg) => (msg.id === aiMsgId ? { ...msg, text: fallback } : msg));
+            }
+            return [
+              ...m,
+              { id: aiMsgId, role: 'ai', text: fallback, timestamp: new Date() },
+            ];
+          });
+        } else {
+          // Sync back to storage and gemini history
+          setGeminiHistory((prev) => [
+            ...prev,
+            userGemini,
+            { role: 'model', parts: [{ text: aiText }] },
+          ]);
+          saveMessages(currentSubject.id, [
+            ...messages,
+            userMessage,
+            { id: aiMsgId, role: 'ai', text: aiText, timestamp: new Date() },
+          ]);
+        }
+      },
+      [uploadedImage, isLoading, geminiHistory, currentSubject.id, education, messages],
+    );
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden">
+    <div className="flex h-dvh w-full bg-brand-bg text-brand-text overflow-hidden">
       <Sidebar
         currentSubject={currentSubject}
         onSubjectChange={handleSubjectChange}
+        onOpenSettings={() => setShowSettings(true)}
+        streak={streak}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -310,6 +345,44 @@ export default function ChatApp() {
           disabled={isLoading}
           subject={currentSubject}
         />
+
+        {/* Mobile Bottom Navigation - Reachability Optimized */}
+        <nav className="flex h-16 w-full items-center justify-around border-t border-white/5 bg-brand-surface/80 px-4 pb-safe backdrop-blur-xl md:hidden">
+           <button 
+             onClick={() => setSidebarOpen(true)}
+             className="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-primary"
+           >
+             <Menu size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-tighter">Subjects</span>
+           </button>
+           
+           <button 
+             onClick={() => setShowHub(true)}
+             className="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-primary"
+           >
+             <LayoutDashboard size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-tighter">Hub</span>
+           </button>
+
+           <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-bg text-white shadow-lg shadow-brand-primary/20 -translate-y-4 border-4 border-brand-bg">
+              <Sparkles size={20} fill="currentColor" onClick={() => setShowQuiz(true)} />
+           </div>
+
+           <button 
+             className="flex flex-col items-center gap-1 text-brand-muted opacity-30 cursor-not-allowed"
+           >
+             <Flame size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-tighter">Streak</span>
+           </button>
+           
+           <button 
+             className="flex flex-col items-center gap-1 text-brand-muted"
+             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+           >
+             <div className="h-5 w-5 rounded-md border-2 border-current flex items-center justify-center text-[10px] font-black">↑</div>
+             <span className="text-[10px] font-bold uppercase tracking-tighter">Top</span>
+           </button>
+        </nav>
       </main>
 
       <QuizModal
@@ -323,7 +396,6 @@ export default function ChatApp() {
       <LearningHub
         open={showHub}
         onClose={() => setShowHub(false)}
-        streak={streak}
         education={education}
         onSaveEducation={(edu) => {
           setEducation(edu);

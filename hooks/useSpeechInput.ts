@@ -1,19 +1,45 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: {
+    [key: number]: {
+      [key: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+}
+
 export function useSpeechInput() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [supported, setSupported] = useState(true);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    // @ts-ignore
+    // @ts-expect-error - Web Speech API may use webkit prefix
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setSupported(false);
+      requestAnimationFrame(() => setSupported(false));
       return;
     }
 
@@ -22,13 +48,13 @@ export function useSpeechInput() {
     recognition.interimResults = false;
     recognition.lang = 'en-US'; // Works reasonably well for Roman Urdu
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const current = event.resultIndex;
       const result = event.results[current][0].transcript;
       setTranscript(result);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error', event.error);
       setIsListening(false);
     };

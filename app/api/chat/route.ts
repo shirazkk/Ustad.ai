@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   const agent = getAgent(subject);
 
   // Education Context Injection
-  let eduContext = education 
+  let eduContext = education
     ? `\n\nSTRICT SYLLABUS SCOPE: The student is in ${education.grade} grade, following the ${education.board} Board curriculum. Tailor your explanations, terminology, and complexity to match this specific syllabus.`
     : '';
 

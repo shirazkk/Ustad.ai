@@ -13,8 +13,6 @@ export default function StreakHeatmap() {
   const days = useMemo(() => {
     const arr = [];
     const today = new Date();
-    // Start from the most recent Sunday to keep the grid aligned
-    const currentDay = today.getDay(); // 0 is Sunday
     const totalDays = 28;
     
     for (let i = totalDays - 1; i >= 0; i--) {

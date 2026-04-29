@@ -16,7 +16,9 @@ export default function SettingsModal({ open, onClose, onSave }: Props) {
 
   useEffect(() => {
     if (open) {
-      setEducation(getEducation());
+      requestAnimationFrame(() => {
+        setEducation(getEducation());
+      });
     }
   }, [open]);
 

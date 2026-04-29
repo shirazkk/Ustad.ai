@@ -21,12 +21,12 @@ export function loadMessages(subjectId: string): Message[] {
     const raw = localStorage.getItem(`${STORAGE_PREFIX}${subjectId}`);
     if (!raw) return [];
     
-    const parsed = JSON.parse(raw) as any[];
+    const parsed = JSON.parse(raw) as (Message & { timestamp: string })[];
     // Convert string timestamps back to Date objects
     return parsed.map(m => ({
       ...m,
       timestamp: new Date(m.timestamp)
-    })) as Message[];
+    }));
   } catch (e) {
     console.error('[storage] Failed to load messages:', e);
     return [];

@@ -36,29 +36,29 @@ function buildQuizPrompt(subject: string, topic?: string, streak: number = 0, ed
     eduContext += `\nLOW-DATA MODE: Keep question and explanations very short.`;
   }
 
-  return `Tum "${agent.name}" ho — Pakistani AI tutor.
+  return `Tum "${agent.name}" ho — Pakistan ka best AI tutor.
 
 Subject: ${subject}
 ${context}${difficultyInstruction}${eduContext}
 
-Ek MCQ (multiple choice question) banao Pakistani school/college student ke liye (age 12-22).
-Mix Roman Urdu + English use karo question aur explanations mein.
+Ek high-quality MCQ (multiple choice question) banao Pakistani students (age 12-22) ke liye.
+Mix Roman Urdu + English use karo (natural Hinglish vibe).
 
-STRICTLY return ONLY raw JSON. No markdown fences, no extra text, no commentary.
+STRICTLY return ONLY raw JSON. No markdown fences.
 Schema:
 {
   "question": "string (Roman Urdu + English mix)",
   "options": ["A", "B", "C", "D"],
   "correct": 0,
-  "explanation_correct": "Roman Urdu celebration + brief explanation",
-  "explanation_wrong": "Roman Urdu gentle roast + correct explanation"
+  "explanation_correct": "Short celebration + DEEP conceptual 'why' using a creative Pakistani daily life analogy (biryani, cricket, rickshaw, etc.)",
+  "explanation_wrong": "Gentle roast + correct logic explained through a relatable desi example."
 }
 
 Rules:
 - "options" array must have EXACTLY 4 items.
-- "correct" must be 0, 1, 2, or 3 (zero-indexed).
-- Use a Pakistani daily life analogy in at least one explanation.
-- Keep options short and distinct.`;
+- "correct" must be 0-3 index.
+- THE EXPLANATION IS THE MOST IMPORTANT PART. It must TEACH the concept in 1-2 lines.
+- Use specific local references (e.g., Karachi weather, Lahore food, Load shedding, PSL).`;
 }
 
 function parseQuiz(raw: string): QuizQuestion | null {

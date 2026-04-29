@@ -6,7 +6,7 @@ export function useSpeechOutput() {
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
-      setSupported(false);
+      requestAnimationFrame(() => setSupported(false));
       return;
     }
 
@@ -33,13 +33,14 @@ export function useSpeechOutput() {
     if (!cleanText) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    
     const voices = window.speechSynthesis.getVoices();
     
-    // Prioritize Urdu, Hindi, or Indian English for the best pronunciation
-    const preferredVoice = voices.find(v => 
-      v.lang.startsWith('ur') || v.lang.startsWith('hi') || v.lang.startsWith('en-IN')
-    );
+    // Prioritize Urdu, Hindi, or Indian English with matching gender
+    const preferredVoice = voices.find(v => {
+      const isCorrectLang = v.lang.startsWith('ur') || v.lang.startsWith('hi') || v.lang.startsWith('en-IN');
+      const nameMatch = v.name.toLowerCase().includes(gender);
+      return isCorrectLang && nameMatch;
+    }) || voices.find(v => v.lang.startsWith('ur') || v.lang.startsWith('hi') || v.lang.startsWith('en-IN'));
 
     if (preferredVoice) {
       utterance.voice = preferredVoice;
@@ -48,14 +49,7 @@ export function useSpeechOutput() {
       utterance.lang = 'en-IN';
     }
 
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-      utterance.lang = preferredVoice.lang;
-    } else {
-      utterance.lang = 'en-IN';
-    }
-
-    utterance.rate = 0.95;
+    utterance.rate = 1.0;
     utterance.pitch = 1.0;
 
     utterance.onstart = () => setIsSpeaking(true);

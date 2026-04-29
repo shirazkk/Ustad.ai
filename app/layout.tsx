@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import './globals.css';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
@@ -41,19 +40,6 @@ export default function RootLayout({
       <body className="min-h-dvh bg-brand-bg text-brand-text font-nunito">
         <BackgroundBlobs />
         {children}
-        <Script
-          id="register-sw"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Bookmark, Search, Trash2 } from 'lucide-react';
+import { X, Bookmark, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Bookmark as BookmarkType } from '@/lib/bookmarks';
 

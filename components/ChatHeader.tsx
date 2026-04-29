@@ -16,8 +16,8 @@ export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onOpenH
   const agent = getAgent(subject.id);
 
   return (
-    <header className="flex h-20 items-center justify-between border-b border-white/5 bg-brand-bg px-4 backdrop-blur-xl sm:px-8">
-      {/* Left: Sidebar Toggle (Mobile only) + Brand (Desktop) */}
+    <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-white/5 bg-brand-bg/80 px-4 backdrop-blur-2xl sm:px-8">
+      {/* Left: Menu & Identity */}
       <div className="flex flex-1 items-center gap-4">
         <button
           onClick={onOpenSidebar}
@@ -26,49 +26,52 @@ export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onOpenH
           <Menu size={20} />
         </button>
         
-        <div className="hidden items-center gap-2 md:flex">
-           <div className="h-8 w-1 rounded-full bg-brand-primary" />
-           <span className="font-syne text-xs font-bold uppercase tracking-widest text-brand-muted opacity-50">Session Active</span>
+        <div className="flex items-center gap-3">
+           <div className="hidden h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/10 text-xl md:flex">
+             {subject.emoji}
+           </div>
+           <div className="flex flex-col">
+              <h2 className="font-syne text-sm font-black uppercase tracking-widest text-brand-text sm:text-base">
+                {subject.label}
+              </h2>
+              <p className="text-[10px] font-bold text-brand-muted opacity-60">
+                AI Session with {agent.name}
+              </p>
+           </div>
         </div>
       </div>
 
-      {/* Center: Current Subject Identity */}
-      <div className="flex flex-col items-center justify-center text-center">
-         <div className="flex items-center gap-2">
-            <span className="text-xl">{subject.emoji}</span>
-            <h2 className="font-syne text-lg font-extrabold text-brand-text">{subject.label}</h2>
-         </div>
-         <p className="hidden text-[10px] font-bold uppercase tracking-wider text-brand-muted opacity-60 sm:block">
-            Taught by {agent.name}
-         </p>
-      </div>
-
-      {/* Right: Actions */}
+      {/* Right: Primary Actions */}
       <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+        {/* Secondary Utility (Hidden on mobile, in Hub) */}
         <button
           onClick={onClearChat}
-          className="group flex h-10 w-10 items-center justify-center rounded-2xl text-brand-muted transition-all hover:bg-red-500/10 hover:text-red-400"
-          title="Clear History"
+          className="hidden h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-red-500/10 hover:text-red-400 sm:flex"
+          title="Clear Chat"
         >
-          <Trash2 size={18} className="transition-transform group-hover:scale-110" />
+          <Trash2 size={18} />
         </button>
 
-        <div className="h-6 w-px bg-white/10" />
+        <div className="hidden h-6 w-px bg-white/10 sm:block" />
 
+        {/* The "Brain" / Hub Trigger */}
         <button
           onClick={onOpenHub}
-          className="group flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-brand-muted transition-all hover:bg-brand-primary/20 hover:text-brand-primary hover:shadow-[0_0_15px_rgba(124,58,237,0.3)]"
-          title="Learning Hub"
+          className="flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-2 text-xs font-bold text-brand-text ring-1 ring-white/10 transition-all hover:bg-white/10 hover:ring-brand-primary/50 sm:px-5 sm:py-2.5"
         >
-          <LayoutDashboard size={20} className="transition-transform group-hover:scale-110" />
+          <LayoutDashboard size={16} className="text-brand-primary" />
+          <span className="hidden sm:inline">Learning Hub</span>
+          <span className="sm:hidden">Hub</span>
         </button>
 
+        {/* High Impact Action */}
         <button
           onClick={onOpenQuiz}
-          className="flex items-center gap-2 rounded-2xl bg-brand-accent px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-brand-accent/20 transition-all hover:scale-105 active:scale-95"
+          className="group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl gradient-bg text-white shadow-lg shadow-brand-accent/20 transition-all hover:scale-105 active:scale-95 sm:w-auto sm:px-6"
         >
-          <Sparkles size={14} fill="currentColor" />
-          <span>Lo Quiz</span>
+          <div className="absolute inset-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
+          <Sparkles size={16} fill="currentColor" className="sm:mr-2" />
+          <span className="hidden font-syne font-bold sm:inline text-[13px]">LO QUIZ</span>
         </button>
       </div>
     </header>

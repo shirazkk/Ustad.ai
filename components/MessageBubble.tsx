@@ -1,12 +1,15 @@
 'use client';
 
+import { useState } from 'react';
+
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import { getAgent } from '@/lib/agents';
 import { useSpeechOutput } from '@/hooks/useSpeechOutput';
-import { Bookmark as BookmarkIcon } from 'lucide-react';
+import { Bookmark as BookmarkIcon, Copy, Check } from 'lucide-react';
 import type { Subject, Message } from '@/types';
 
 interface Props {
@@ -26,46 +29,84 @@ export default function MessageBubble({ message, subject, onBookmark, isBookmark
     minute: '2-digit',
   }) : '';
 
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div
-      className={`flex w-full ${!lowData ? 'animate-msg-slide' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex w-full mb-6 ${!lowData ? 'animate-msg-slide' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
     >
-      <div className={`flex max-w-[85%] items-end gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      <div className={`flex max-w-[85%] items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+        {/* Avatar with Glow */}
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg ${
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-xl shadow-lg transition-transform hover:scale-110 ${
             isUser
-              ? 'bg-brand-card text-brand-text'
-              : 'bg-gradient-to-br from-brand-primary to-brand-secondary'
+              ? 'bg-brand-card border border-white/10 text-brand-text'
+              : 'gradient-bg text-white shadow-brand-primary/20'
           }`}
         >
           {isUser ? '🧑‍🎓' : agent.avatar}
         </div>
 
         <div
-          className={`flex flex-col gap-1 ${isUser ? 'items-end' : 'items-start'}`}
+          className={`group relative flex flex-col gap-1.5 ${isUser ? 'items-end' : 'items-start'}`}
         >
+          {/* Sender Name & Copy Action */}
+          <div className="flex w-full items-center justify-between px-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-brand-muted opacity-40">
+              {isUser ? 'You' : agent.name}
+            </span>
+            
+            <button
+              onClick={handleCopy}
+              className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold text-brand-primary hover:text-brand-accent"
+            >
+              {copied ? (
+                <>
+                  <Check size={10} />
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy size={10} />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
+
           <div
-            className={`rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
+            className={`relative rounded-3xl px-5 py-4 text-[15px] leading-relaxed shadow-xl ${
               isUser
-                ? 'gradient-bg rounded-br-sm text-white shadow-lg shadow-brand-primary/20'
-                : 'rounded-bl-sm bg-brand-card text-brand-text'
+                ? 'gradient-bg rounded-tr-sm text-white'
+                : 'rounded-tl-sm border border-white/5 bg-brand-card/50 backdrop-blur-xl text-brand-text'
             }`}
           >
             {message.imageBase64 && (
-              <img
-                src={
-                  message.imageBase64.startsWith('data:')
-                    ? message.imageBase64
-                    : `data:image/jpeg;base64,${message.imageBase64}`
-                }
-                alt="uploaded"
-                className="mb-2 max-h-64 rounded-lg"
-              />
+              <div className="mb-3 overflow-hidden rounded-2xl border border-white/10 shadow-inner">
+                <Image
+                  src={
+                    message.imageBase64.startsWith('data:')
+                      ? message.imageBase64
+                      : `data:image/jpeg;base64,${message.imageBase64}`
+                  }
+                  alt="uploaded"
+                  width={400}
+                  height={300}
+                  unoptimized
+                  className="max-h-64 w-auto object-contain"
+                />
+              </div>
             )}
             {isUser ? (
               <p className="whitespace-pre-wrap break-words">{message.text}</p>
             ) : (
-              <div className="prose prose-invert prose-sm max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_code]:rounded [&_code]:bg-black/40 [&_code]:px-1 [&_code]:py-0.5">
+              <div className="prose prose-invert prose-sm max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_code]:rounded-lg [&_code]:bg-black/40 [&_code]:px-2 [&_code]:py-1 [&_code]:font-mono [&_code]:text-xs">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath]}
                   rehypePlugins={[rehypeKatex, rehypeHighlight]}

@@ -36,15 +36,18 @@ export default function QuizModal({ open, subject, education, onClose, onCorrect
   // Reset states when modal opens
   useEffect(() => {
     if (open) {
-      setMode('setup');
-      setStatus('ready');
-      setTopic('');
-      setQuiz(null);
-      setSelected(null);
-      setCurrentIdx(0);
-      setScore(0);
-      setStreak(0);
-      setSessionHistory([]);
+      // Use requestAnimationFrame to avoid synchronous setState in effect warning
+      requestAnimationFrame(() => {
+        setMode('setup');
+        setStatus('ready');
+        setTopic('');
+        setQuiz(null);
+        setSelected(null);
+        setCurrentIdx(0);
+        setScore(0);
+        setStreak(0);
+        setSessionHistory([]);
+      });
     }
   }, [open]);
 
@@ -72,7 +75,7 @@ export default function QuizModal({ open, subject, education, onClose, onCorrect
     } catch {
       setStatus('error');
     }
-  }, [subject.id]);
+  }, [subject.id, streak, education]);
 
   const startQuiz = () => {
     setMode('playing');
@@ -275,19 +278,32 @@ export default function QuizModal({ open, subject, education, onClose, onCorrect
                   </div>
 
                   {status === 'answered' && (
-                    <div className="mt-8 rounded-2xl border border-white/5 bg-brand-card/50 p-5 animate-msg-slide">
-                      <div className={`mb-2 font-syne text-sm font-bold ${isCorrect ? 'text-brand-accent' : 'text-brand-secondary'}`}>
-                        {isCorrect ? 'WAAAH! Zabardast! 🎉' : 'Koi baat nahi! 😅'}
+                    <div className="mt-10 overflow-hidden rounded-[28px] border border-white/10 bg-brand-card/30 backdrop-blur-xl animate-msg-slide shadow-2xl">
+                      <div className="flex gap-4 p-6">
+                         {/* Ustaad Avatar with pulse if correct */}
+                         <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl shadow-lg ${isCorrect ? 'gradient-bg shadow-brand-primary/40' : 'bg-white/5 opacity-80'}`}>
+                            {agent.avatar}
+                         </div>
+                         
+                         <div className="flex flex-1 flex-col pt-1">
+                            <div className={`mb-2 font-syne text-[10px] font-black uppercase tracking-[0.2em] ${isCorrect ? 'text-brand-accent' : 'text-brand-secondary'}`}>
+                              {agent.name} says:
+                            </div>
+                            <p className="text-[15px] leading-relaxed text-brand-text">
+                              {isCorrect ? quiz.explanation_correct : quiz.explanation_wrong}
+                            </p>
+                         </div>
                       </div>
-                      <p className="text-sm leading-relaxed text-brand-muted">
-                        {isCorrect ? quiz.explanation_correct : quiz.explanation_wrong}
-                      </p>
-                      <button
-                        onClick={handleNext}
-                        className="mt-6 w-full rounded-2xl gradient-bg py-4 font-syne text-sm font-bold text-white shadow-lg shadow-brand-primary/20 hover:scale-[1.01] active:scale-95 transition-all"
-                      >
-                        {currentIdx === TOTAL_QUESTIONS ? 'Result Dekho →' : 'Agla Sawaal →'}
-                      </button>
+
+                      <div className="bg-white/5 p-4">
+                        <button
+                          onClick={handleNext}
+                          className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl gradient-bg py-4 font-syne text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.01] active:scale-95"
+                        >
+                          <span>{currentIdx === TOTAL_QUESTIONS ? 'Result Dekho' : 'Agla Sawaal'}</span>
+                          <span className="transition-transform group-hover:translate-x-1">→</span>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -320,9 +336,9 @@ export default function QuizModal({ open, subject, education, onClose, onCorrect
               </div>
 
               <p className="mb-10 max-w-xs text-sm italic text-brand-muted">
-                "{score >= 8 ? 'Ustaad Bilal proud hain tum par! Agay barhte raho.' : 
+                &quot;{score >= 8 ? 'Ustaad Bilal proud hain tum par! Agay barhte raho.' : 
                   score >= 5 ? 'Acha khelay! Thori si mehnat aur chahiye bas.' : 
-                  'Yaar koi baat nahi, agli baar behtar hoga. Practice makes perfect!'}"
+                  'Yaar koi baat nahi, agli baar behtar hoga. Practice makes perfect!'}&quot;
               </p>
 
               <div className="flex w-full flex-col gap-3">

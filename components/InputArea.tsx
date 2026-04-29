@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
+import { useRef, useState, useEffect, useCallback, type ChangeEvent, type KeyboardEvent } from 'react';
+import Image from 'next/image';
 import { getAgent } from '@/lib/agents';
 import { useSpeechInput } from '@/hooks/useSpeechInput';
 import imageCompression from 'browser-image-compression';
@@ -21,19 +22,22 @@ export default function InputArea({ onSend, onImageUpload, uploadedImage, disabl
   const agent = getAgent(subject.id);
   const { transcript, isListening, startListening, stopListening, supported } = useSpeechInput();
 
-  useEffect(() => {
-    if (transcript) {
-      setValue((prev) => (prev ? `${prev} ${transcript}` : transcript));
-      requestAnimationFrame(resize);
-    }
-  }, [transcript]);
-
-  const resize = () => {
+  const resize = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-  };
+  }, []);
+
+  useEffect(() => {
+    if (transcript) {
+      requestAnimationFrame(() => {
+        setValue((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        // Using a small timeout to ensure state update is processed before resize
+        setTimeout(resize, 0);
+      });
+    }
+  }, [transcript, resize]);
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
@@ -117,7 +121,15 @@ export default function InputArea({ onSend, onImageUpload, uploadedImage, disabl
         {uploadedImage && (
           <div className="mb-3 flex items-center gap-2">
             <div className="relative">
-              <img src={uploadedImage} alt="preview" className="h-16 w-16 rounded-lg object-cover" />
+            <div className="relative h-16 w-16 overflow-hidden rounded-lg">
+              <Image 
+                src={uploadedImage} 
+                alt="preview" 
+                fill
+                unoptimized
+                className="object-cover" 
+              />
+            </div>
               <button
                 onClick={() => onImageUpload(null)}
                 className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-secondary text-xs text-white shadow-md hover:scale-110"
