@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, LayoutDashboard, Sparkles, Flame } from 'lucide-react';
+import { Menu, LayoutDashboard, Sparkles, Share2 } from 'lucide-react';
+import { chatToMarkdown, shareChat } from '@/lib/share';
 
 import { useCallback, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
@@ -14,9 +15,10 @@ import { getAgent } from '@/lib/agents';
 import { saveMessages, loadMessages, clearMessages } from '@/lib/storage';
 import { recordActivity, getStreak } from '@/lib/streak';
 import { toggleBookmark, getBookmarks } from '@/lib/bookmarks';
-import { UserEducation, getEducation, saveEducation } from '@/lib/boards';
+import { UserEducation, getEducation, saveEducation, hasOnboarded, markOnboarded } from '@/lib/boards';
 import LearningHub from './LearningHub';
 import SettingsModal from './SettingsModal';
+import OnboardingModal from './OnboardingModal';
 import type { GeminiMessage, Message, Subject } from '@/types';
 
 function syncGeminiHistory(messages: Message[]): GeminiMessage[] {
@@ -93,6 +95,11 @@ export default function ChatApp() {
   });
 
   const [showBookmarks, setShowBookmarks] = useState(false);
+
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return !hasOnboarded();
+  });
 
   // Sync state when subject changes
   useEffect(() => {
@@ -324,6 +331,7 @@ export default function ChatApp() {
       <main className="flex h-full flex-1 flex-col overflow-hidden">
         <ChatHeader
           subject={currentSubject}
+          messages={messages}
           onOpenQuiz={() => setShowQuiz(true)}
           onOpenSidebar={() => setSidebarOpen(true)}
           onOpenHub={() => setShowHub(true)}
@@ -348,15 +356,15 @@ export default function ChatApp() {
 
         {/* Mobile Bottom Navigation - Reachability Optimized */}
         <nav className="flex h-16 w-full items-center justify-around border-t border-white/5 bg-brand-surface/80 px-4 pb-safe backdrop-blur-xl md:hidden">
-           <button 
+           <button
              onClick={() => setSidebarOpen(true)}
              className="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-primary"
            >
              <Menu size={20} />
              <span className="text-[10px] font-bold uppercase tracking-tighter">Subjects</span>
            </button>
-           
-           <button 
+
+           <button
              onClick={() => setShowHub(true)}
              className="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-primary"
            >
@@ -364,23 +372,34 @@ export default function ChatApp() {
              <span className="text-[10px] font-bold uppercase tracking-tighter">Hub</span>
            </button>
 
-           <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-bg text-white shadow-lg shadow-brand-primary/20 -translate-y-4 border-4 border-brand-bg">
-              <Sparkles size={20} fill="currentColor" onClick={() => setShowQuiz(true)} />
-           </div>
-
-           <button 
-             className="flex flex-col items-center gap-1 text-brand-muted opacity-30 cursor-not-allowed"
+           <button
+             onClick={() => setShowQuiz(true)}
+             className="flex h-10 w-10 items-center justify-center rounded-full gradient-bg text-white shadow-lg shadow-brand-primary/20 -translate-y-4 border-4 border-brand-bg"
+             aria-label="Quiz"
            >
-             <Flame size={20} />
-             <span className="text-[10px] font-bold uppercase tracking-tighter">Streak</span>
+              <Sparkles size={20} fill="currentColor" />
            </button>
-           
-           <button 
-             className="flex flex-col items-center gap-1 text-brand-muted"
-             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+
+           <button
+             onClick={async () => {
+               if (messages.length < 2) return;
+               const agent = getAgent(currentSubject.id);
+               const md = chatToMarkdown(messages, currentSubject.label, agent.name);
+               await shareChat(md, currentSubject.label);
+             }}
+             disabled={messages.length < 2}
+             className="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-primary disabled:opacity-30"
            >
-             <div className="h-5 w-5 rounded-md border-2 border-current flex items-center justify-center text-[10px] font-black">↑</div>
-             <span className="text-[10px] font-bold uppercase tracking-tighter">Top</span>
+             <Share2 size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-tighter">Share</span>
+           </button>
+
+           <button
+             onClick={() => setShowBookmarks(true)}
+             className="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-primary"
+           >
+             <div className="h-5 w-5 rounded-md border-2 border-current flex items-center justify-center text-[10px] font-black">★</div>
+             <span className="text-[10px] font-bold uppercase tracking-tighter">Notes</span>
            </button>
         </nav>
       </main>
@@ -414,6 +433,16 @@ export default function ChatApp() {
         open={showSettings}
         onClose={() => setShowSettings(false)}
         onSave={setEducation}
+      />
+
+      <OnboardingModal
+        open={showOnboarding}
+        onComplete={(edu) => {
+          setEducation(edu);
+          saveEducation(edu);
+          markOnboarded();
+          setShowOnboarding(false);
+        }}
       />
     </div>
   );

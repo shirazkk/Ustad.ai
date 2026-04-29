@@ -1,19 +1,32 @@
 'use client';
 
+import { useState } from 'react';
 import { getAgent } from '@/lib/agents';
-import { LayoutDashboard, Sparkles, Menu, Trash2 } from 'lucide-react';
-import type { Subject } from '@/types';
+import { LayoutDashboard, Sparkles, Menu, Trash2, Share2, Check } from 'lucide-react';
+import { chatToMarkdown, shareChat } from '@/lib/share';
+import type { Subject, Message } from '@/types';
 
 interface Props {
   subject: Subject;
+  messages: Message[];
   onOpenQuiz: () => void;
   onOpenSidebar: () => void;
   onOpenHub: () => void;
   onClearChat: () => void;
 }
 
-export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onOpenHub, onClearChat }: Props) {
+export default function ChatHeader({ subject, messages, onOpenQuiz, onOpenSidebar, onOpenHub, onClearChat }: Props) {
   const agent = getAgent(subject.id);
+  const [shareState, setShareState] = useState<'idle' | 'shared' | 'copied'>('idle');
+
+  const handleShare = async () => {
+    if (messages.length < 2) return; // nothing meaningful to share
+    const md = chatToMarkdown(messages, subject.label, agent.name);
+    const result = await shareChat(md, subject.label);
+    if (result === 'shared') setShareState('shared');
+    else if (result === 'copied') setShareState('copied');
+    setTimeout(() => setShareState('idle'), 2000);
+  };
 
   return (
     <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-white/5 bg-brand-bg/80 px-4 backdrop-blur-2xl sm:px-8">
@@ -25,7 +38,7 @@ export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onOpenH
         >
           <Menu size={20} />
         </button>
-        
+
         <div className="flex items-center gap-3">
            <div className="hidden h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/10 text-xl md:flex">
              {subject.emoji}
@@ -43,6 +56,16 @@ export default function ChatHeader({ subject, onOpenQuiz, onOpenSidebar, onOpenH
 
       {/* Right: Primary Actions */}
       <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+        {/* Share */}
+        <button
+          onClick={handleShare}
+          disabled={messages.length < 2}
+          className="hidden h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-brand-primary/10 hover:text-brand-primary disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-brand-muted sm:flex"
+          title={shareState === 'copied' ? 'Copied!' : shareState === 'shared' ? 'Shared!' : 'Share chat'}
+        >
+          {shareState === 'idle' ? <Share2 size={18} /> : <Check size={18} className="text-brand-accent" />}
+        </button>
+
         {/* Secondary Utility (Hidden on mobile, in Hub) */}
         <button
           onClick={onClearChat}

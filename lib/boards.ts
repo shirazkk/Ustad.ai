@@ -35,6 +35,7 @@ export interface UserEducation {
 }
 
 const STORAGE_KEY = 'ustaad_education';
+const ONBOARDED_KEY = 'ustaad_onboarded';
 
 export function saveEducation(edu: UserEducation) {
   if (typeof window === 'undefined') return;
@@ -44,7 +45,7 @@ export function saveEducation(edu: UserEducation) {
 export function getEducation(): UserEducation {
   const defaultEdu: UserEducation = { board: 'Federal', grade: '10th', lowData: false };
   if (typeof window === 'undefined') return defaultEdu;
-  
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return defaultEdu;
@@ -53,4 +54,14 @@ export function getEducation(): UserEducation {
   } catch {
     return defaultEdu;
   }
+}
+
+export function hasOnboarded(): boolean {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem(ONBOARDED_KEY) === '1';
+}
+
+export function markOnboarded() {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(ONBOARDED_KEY, '1');
 }
