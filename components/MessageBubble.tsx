@@ -17,10 +17,9 @@ interface Props {
   subject: Subject;
   onBookmark?: (m: Message) => void;
   isBookmarked?: boolean;
-  lowData?: boolean;
 }
 
-export default function MessageBubble({ message, subject, onBookmark, isBookmarked, lowData }: Props) {
+export default function MessageBubble({ message, subject, onBookmark, isBookmarked }: Props) {
   const agent = getAgent(subject.id);
   const { speak, stop, isSpeaking, supported } = useSpeechOutput();
   const isUser = message.role === 'user';
@@ -39,7 +38,7 @@ export default function MessageBubble({ message, subject, onBookmark, isBookmark
 
   return (
     <div
-      className={`flex w-full mb-6 ${!lowData ? 'animate-msg-slide' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex w-full mb-6 animate-msg-slide ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`flex max-w-[85%] items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar with Glow */}

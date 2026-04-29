@@ -28,13 +28,9 @@ function buildQuizPrompt(subject: string, topic?: string, streak: number = 0, ed
   }
 
   // Education Context logic
-  let eduContext = education 
-    ? `\nSTRICT SYLLABUS SCOPE: Student is in ${education.grade} grade, ${education.board} Board. Only ask what is relevant to this curriculum.` 
+  const eduContext = education
+    ? `\nSTRICT SYLLABUS SCOPE: Student is in ${education.grade} grade, ${education.board} Board. Only ask what is relevant to this curriculum.`
     : '';
-
-  if (education?.lowData) {
-    eduContext += `\nLOW-DATA MODE: Keep question and explanations very short.`;
-  }
 
   return `Tum "${agent.name}" ho — Pakistan ka best AI tutor.
 

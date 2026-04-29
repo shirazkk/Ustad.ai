@@ -80,7 +80,6 @@ The project is currently transitioning through the following implementation phas
 ### Phase 4: Accessibility & Localization
 - **Voice Interaction:** Adding Speech-to-Text (STT) for input and Text-to-Speech (TTS) for Ustaad Bilal's responses.
 - **Board Syllabus Mode:** Customizing responses based on specific Pakistani educational boards (Sindh, Punjab, Federal) and grade levels.
-- **Low-Data Mode:** Optimizing for low bandwidth by providing shorter, plain-text responses and disabling animations.
 
 ### Phase 5: PWA & Performance
 - **Progressive Web App (PWA):** Adding a manifest and service worker for offline capabilities and homescreen installation.

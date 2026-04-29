@@ -81,7 +81,7 @@ export default function ChatApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [education, setEducation] = useState<UserEducation>(() => {
-    if (typeof window === 'undefined') return { board: 'Federal', grade: '10th', lowData: false };
+    if (typeof window === 'undefined') return { board: 'Federal', grade: '10th' };
     return getEducation();
   });
 
@@ -344,7 +344,6 @@ export default function ChatApp() {
           onQuickSend={sendMessage}
           onBookmark={handleBookmark}
           bookmarkedIds={bookmarkedIds}
-          lowData={education.lowData}
         />
         <InputArea
           onSend={sendMessage}

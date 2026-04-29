@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ChevronRight, GraduationCap, School, Wifi, Sparkles } from 'lucide-react';
+import { Check, ChevronRight, GraduationCap, School, Sparkles } from 'lucide-react';
 import { BOARDS, GRADES, UserEducation } from '@/lib/boards';
 
 interface Props {
@@ -14,10 +14,9 @@ export default function OnboardingModal({ open, onComplete }: Props) {
   const [step, setStep] = useState(0);
   const [board, setBoard] = useState<UserEducation['board']>('Federal');
   const [grade, setGrade] = useState<UserEducation['grade']>('10th');
-  const [lowData, setLowData] = useState(false);
 
   const next = () => setStep((s) => s + 1);
-  const finish = () => onComplete({ board, grade, lowData });
+  const finish = () => onComplete({ board, grade });
 
   return (
     <AnimatePresence>
@@ -38,7 +37,7 @@ export default function OnboardingModal({ open, onComplete }: Props) {
           >
             {/* Progress dots */}
             <div className="flex items-center justify-center gap-2 px-8 pt-8">
-              {[0, 1, 2, 3].map((i) => (
+              {[0, 1, 2].map((i) => (
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all ${
@@ -130,54 +129,11 @@ export default function OnboardingModal({ open, onComplete }: Props) {
                 </div>
               )}
 
-              {step === 3 && (
-                <div className="flex flex-1 flex-col">
-                  <div className="mb-6 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-secondary/20 text-brand-secondary">
-                      <Wifi size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-syne text-xl font-bold text-brand-text">Internet Slow?</h3>
-                      <p className="text-xs text-brand-muted">Low-Data Mode chhote, fast jawaab deta hai.</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => setLowData(false)}
-                      className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 text-left transition-all ${
-                        !lowData
-                          ? 'border-brand-primary bg-brand-primary/10'
-                          : 'border-white/5 bg-white/5'
-                      }`}
-                    >
-                      <div>
-                        <p className="font-bold text-brand-text">Normal Mode</p>
-                        <p className="text-xs text-brand-muted">Pura explanation with examples.</p>
-                      </div>
-                      {!lowData && <Check size={18} className="text-brand-primary" />}
-                    </button>
-                    <button
-                      onClick={() => setLowData(true)}
-                      className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 text-left transition-all ${
-                        lowData
-                          ? 'border-brand-primary bg-brand-primary/10'
-                          : 'border-white/5 bg-white/5'
-                      }`}
-                    >
-                      <div>
-                        <p className="font-bold text-brand-text">Low-Data Mode</p>
-                        <p className="text-xs text-brand-muted">Short, concise jawaab. 80 words se kam.</p>
-                      </div>
-                      {lowData && <Check size={18} className="text-brand-primary" />}
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Footer */}
             <div className="border-t border-white/5 p-6">
-              {step < 3 ? (
+              {step < 2 ? (
                 <button
                   onClick={next}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-bg py-4 font-syne text-lg font-bold text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95"

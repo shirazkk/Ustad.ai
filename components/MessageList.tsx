@@ -14,17 +14,15 @@ interface Props {
   onQuickSend: (text: string) => void;
   onBookmark: (m: Message) => void;
   bookmarkedIds: Set<string>;
-  lowData?: boolean;
 }
 
-export default function MessageList({ 
-  messages, 
-  isLoading, 
-  subject, 
+export default function MessageList({
+  messages,
+  isLoading,
+  subject,
   onQuickSend,
   onBookmark,
   bookmarkedIds,
-  lowData 
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -86,13 +84,12 @@ export default function MessageList({
           ) : (
             <div className="flex flex-col gap-6">
               {messages.map((m) => (
-                <MessageBubble 
-                  key={m.id} 
-                  message={m} 
-                  subject={subject} 
+                <MessageBubble
+                  key={m.id}
+                  message={m}
+                  subject={subject}
                   onBookmark={onBookmark}
                   isBookmarked={bookmarkedIds.has(m.id)}
-                  lowData={lowData}
                 />
               ))}
               {isLoading && <TypingIndicator subject={subject} />}

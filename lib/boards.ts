@@ -3,35 +3,27 @@
  * Defines the Pakistani educational boards and grade levels.
  */
 
-export type Board = 'Federal' | 'Sindh' | 'Punjab' | 'KPK' | 'Balochistan' | 'O-Level' | 'A-Level';
-export type Grade = '9th' | '10th' | '11th' | '12th' | 'O1' | 'O2' | 'O3' | 'A1' | 'A2';
+export type Board = 'Federal' | 'Sindh' | 'Punjab' | 'KPK' | 'Balochistan';
+export type Grade = '9th' | '10th' | '11th' | '12th';
 
 export const BOARDS: Board[] = [
   'Federal',
   'Sindh',
   'Punjab',
   'KPK',
-  'Balochistan',
-  'O-Level',
-  'A-Level'
+  'Balochistan'
 ];
 
 export const GRADES: Grade[] = [
   '9th',
   '10th',
   '11th',
-  '12th',
-  'O1',
-  'O2',
-  'O3',
-  'A1',
-  'A2'
+  '12th'
 ];
 
 export interface UserEducation {
   board: Board;
   grade: Grade;
-  lowData: boolean;
 }
 
 const STORAGE_KEY = 'ustaad_education';
@@ -43,7 +35,7 @@ export function saveEducation(edu: UserEducation) {
 }
 
 export function getEducation(): UserEducation {
-  const defaultEdu: UserEducation = { board: 'Federal', grade: '10th', lowData: false };
+  const defaultEdu: UserEducation = { board: 'Federal', grade: '10th' };
   if (typeof window === 'undefined') return defaultEdu;
 
   try {

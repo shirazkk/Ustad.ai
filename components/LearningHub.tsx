@@ -363,28 +363,6 @@ export default function LearningHub({ open, onClose, education, onSaveEducation 
                     </div>
                   </section>
 
-                  <section>
-                    <div className="rounded-3xl border border-white/5 bg-white/[0.03] p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-syne font-bold text-brand-text">Low-Data Mode</h3>
-                          <p className="text-xs text-brand-muted mt-1">Slow internet? Use this for shorter answers.</p>
-                        </div>
-                        <button
-                          onClick={() => setLocalEdu({ ...localEdu, lowData: !localEdu.lowData })}
-                          className={`relative h-7 w-12 rounded-full transition-colors ${
-                            localEdu.lowData ? 'bg-brand-primary' : 'bg-white/10'
-                          }`}
-                        >
-                          <motion.div
-                            animate={{ x: localEdu.lowData ? 22 : 4 }}
-                            className="h-5 w-5 rounded-full bg-white shadow-sm"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  </section>
-
                   <div className="pt-4">
                     <button 
                       onClick={handleUpdateSyllabus}

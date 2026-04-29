@@ -39,13 +39,9 @@ export async function POST(request: Request) {
   const agent = getAgent(subject);
 
   // Education Context Injection
-  let eduContext = education
+  const eduContext = education
     ? `\n\nSTRICT SYLLABUS SCOPE: The student is in ${education.grade} grade, following the ${education.board} Board curriculum. Tailor your explanations, terminology, and complexity to match this specific syllabus.`
     : '';
-
-  if (education?.lowData) {
-    eduContext += `\n\nLOW-DATA MODE ENABLED: Keep your response extremely brief and concise (under 80 words). Avoid long explanations and heavy formatting.`;
-  }
 
   if (imageBase64) {
     const dataUrl = imageBase64.startsWith('data:')

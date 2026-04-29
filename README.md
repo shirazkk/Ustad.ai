@@ -12,12 +12,11 @@ Global AI tutors explain physics with American football and ignore local boards.
 
 - **6 Subject Agents** — Science, Math, English, Urdu, Pakistan Studies, Computer Science. Each has its own persona, temperature, quiz style, and starter prompts (`lib/agents/`).
 - **Hinglish-first persona** — mandatory Pakistani analogy on every explanation; jailbreak-resistant; refuses off-subject questions politely.
-- **Board-aware syllabus scope** — Federal / Sindh / Punjab / KPK / Balochistan / O-Level / A-Level × grades 9–12 / O1–O3 / A1–A2. Every prompt is contextualized so a 10th-grader on Sindh Board never gets O-Level chemistry.
+- **Board-aware syllabus scope** — Federal / Sindh / Punjab / KPK / Balochistan × grades 9–12. Every prompt is contextualized so a 10th-grader on Sindh Board gets exactly that syllabus.
 - **Streaming chat** with multimodal image input — snap a homework photo and the agent identifies the subject, validates scope, and walks through the solution.
 - **Adaptive quizzes** — difficulty auto-adjusts based on streak (`>= 2` correct → harder, `<= -2` → easier). Explanations *teach* the concept, not just mark right/wrong.
 - **Streak heatmap** — daily activity tracking with a yesterday-grace period.
 - **Bookmarks** — auto-categorized as Formula / Definition / Concept / General.
-- **Low-Data Mode** — sub-80-word responses for slow connections.
 - **Per-subject chat history** persisted in `localStorage` (last 50 messages per subject).
 - **Math + code rendering** — KaTeX (`remark-math` + `rehype-katex`) and syntax highlighting (`rehype-highlight`).
 - **Installable PWA** — `app/manifest.ts` ships a standalone web-app manifest (icons, theme, start URL) so students can install Ustaad.ai to their home screen and launch it like a native app.
@@ -113,7 +112,7 @@ ustad-ai/
 │   │   ├── science.ts | math.ts | english.ts | urdu.ts | history.ts | cs.ts
 │   │   ├── shared.ts           # Cross-cutting persona rules
 │   │   └── index.ts            # getAgent(id)
-│   ├── boards.ts               # Education context (board + grade + lowData)
+│   ├── boards.ts               # Education context (board + grade)
 │   ├── bookmarks.ts            # Auto-categorized message bookmarks
 │   ├── storage.ts              # Per-subject chat persistence
 │   ├── streak.ts               # Daily activity + streak calculation

@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function SettingsModal({ open, onClose, onSave }: Props) {
-  const [education, setEducation] = useState<UserEducation>({ board: 'Federal', grade: '10th', lowData: false });
+  const [education, setEducation] = useState<UserEducation>({ board: 'Federal', grade: '10th' });
 
   useEffect(() => {
     if (open) {
@@ -115,26 +115,6 @@ export default function SettingsModal({ open, onClose, onSave }: Props) {
                 </div>
               </div>
 
-              {/* Low-Data Mode */}
-              <div className="rounded-3xl border border-white/5 bg-white/5 p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-syne font-bold text-brand-text">Low-Data Mode</h3>
-                    <p className="text-xs text-brand-muted mt-1">Slow internet? Use this for shorter answers and less data usage.</p>
-                  </div>
-                  <button
-                    onClick={() => setEducation({ ...education, lowData: !education.lowData })}
-                    className={`relative h-7 w-12 rounded-full transition-colors ${
-                      education.lowData ? 'bg-brand-primary' : 'bg-white/10'
-                    }`}
-                  >
-                    <motion.div
-                      animate={{ x: education.lowData ? 22 : 4 }}
-                      className="h-5 w-5 rounded-full bg-white shadow-sm"
-                    />
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Footer */}

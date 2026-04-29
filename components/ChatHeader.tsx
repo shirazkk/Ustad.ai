@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { getAgent } from '@/lib/agents';
-import { LayoutDashboard, Sparkles, Menu, Trash2, Share2, Check } from 'lucide-react';
+import { LayoutDashboard, Sparkles, Trash2, Share2, Check } from 'lucide-react';
 import { chatToMarkdown, shareChat } from '@/lib/share';
 import type { Subject, Message } from '@/types';
 
@@ -15,7 +15,7 @@ interface Props {
   onClearChat: () => void;
 }
 
-export default function ChatHeader({ subject, messages, onOpenQuiz, onOpenSidebar, onOpenHub, onClearChat }: Props) {
+export default function ChatHeader({ subject, messages, onOpenQuiz, onOpenHub, onClearChat }: Props) {
   const agent = getAgent(subject.id);
   const [shareState, setShareState] = useState<'idle' | 'shared' | 'copied'>('idle');
 
@@ -30,17 +30,10 @@ export default function ChatHeader({ subject, messages, onOpenQuiz, onOpenSideba
 
   return (
     <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-white/5 bg-brand-bg/80 px-4 backdrop-blur-2xl sm:px-8">
-      {/* Left: Menu & Identity */}
+      {/* Left: Identity */}
       <div className="flex flex-1 items-center gap-4">
-        <button
-          onClick={onOpenSidebar}
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-brand-muted hover:text-brand-text md:hidden"
-        >
-          <Menu size={20} />
-        </button>
-
         <div className="flex items-center gap-3">
-           <div className="hidden h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/10 text-xl md:flex">
+           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/10 text-xl">
              {subject.emoji}
            </div>
            <div className="flex flex-col">
@@ -54,47 +47,55 @@ export default function ChatHeader({ subject, messages, onOpenQuiz, onOpenSideba
         </div>
       </div>
 
-      {/* Right: Primary Actions */}
-      <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+      {/* Clear Chat — visible on ALL screens */}
+      <button
+        onClick={onClearChat}
+        className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-red-500/10 hover:text-red-400 md:hidden"
+        title="Clear Chat"
+      >
+        <Trash2 size={18} />
+      </button>
+
+      {/* Right: Primary Actions (desktop only — mobile/tablet uses bottom nav) */}
+      <div className="hidden flex-1 items-center justify-end gap-2 md:flex md:gap-4">
         {/* Share */}
         <button
           onClick={handleShare}
           disabled={messages.length < 2}
-          className="hidden h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-brand-primary/10 hover:text-brand-primary disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-brand-muted sm:flex"
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-brand-primary/10 hover:text-brand-primary disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-brand-muted"
           title={shareState === 'copied' ? 'Copied!' : shareState === 'shared' ? 'Shared!' : 'Share chat'}
         >
           {shareState === 'idle' ? <Share2 size={18} /> : <Check size={18} className="text-brand-accent" />}
         </button>
 
-        {/* Secondary Utility (Hidden on mobile, in Hub) */}
+        {/* Clear */}
         <button
           onClick={onClearChat}
-          className="hidden h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-red-500/10 hover:text-red-400 sm:flex"
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted transition-all hover:bg-red-500/10 hover:text-red-400"
           title="Clear Chat"
         >
           <Trash2 size={18} />
         </button>
 
-        <div className="hidden h-6 w-px bg-white/10 sm:block" />
+        <div className="h-6 w-px bg-white/10" />
 
-        {/* The "Brain" / Hub Trigger */}
+        {/* Hub */}
         <button
           onClick={onOpenHub}
-          className="flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-2 text-xs font-bold text-brand-text ring-1 ring-white/10 transition-all hover:bg-white/10 hover:ring-brand-primary/50 sm:px-5 sm:py-2.5"
+          className="flex items-center gap-2 rounded-2xl bg-white/5 px-5 py-2.5 text-xs font-bold text-brand-text ring-1 ring-white/10 transition-all hover:bg-white/10 hover:ring-brand-primary/50"
         >
           <LayoutDashboard size={16} className="text-brand-primary" />
-          <span className="hidden sm:inline">Learning Hub</span>
-          <span className="sm:hidden">Hub</span>
+          <span>Learning Hub</span>
         </button>
 
-        {/* High Impact Action */}
+        {/* Quiz */}
         <button
           onClick={onOpenQuiz}
-          className="group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl gradient-bg text-white shadow-lg shadow-brand-accent/20 transition-all hover:scale-105 active:scale-95 sm:w-auto sm:px-6"
+          className="group relative flex items-center justify-center overflow-hidden rounded-2xl gradient-bg px-6 py-2.5 text-white shadow-lg shadow-brand-accent/20 transition-all hover:scale-105 active:scale-95"
         >
           <div className="absolute inset-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
-          <Sparkles size={16} fill="currentColor" className="sm:mr-2" />
-          <span className="hidden font-syne font-bold sm:inline text-[13px]">LO QUIZ</span>
+          <Sparkles size={16} fill="currentColor" className="mr-2" />
+          <span className="font-syne font-bold text-[13px]">LO QUIZ</span>
         </button>
       </div>
     </header>
